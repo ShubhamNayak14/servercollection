@@ -1,19 +1,14 @@
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const app = express();
 app.use(cors());
 
-const PORT = 5050;
 const ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY_COLLECTION;
 
-// Check API key
 if (!ACCESS_KEY) {
-  console.error("❌ ERROR: UNSPLASH_ACCESS_KEY_COLLECTION missing in .env");
+  console.error("❌ ERROR: UNSPLASH_ACCESS_KEY_COLLECTION missing in ENV");
 }
 
 // Cache system
@@ -22,17 +17,17 @@ let cache = {
   collectionPhotos: {},
   timestamp: 0,
 };
-const CACHE_TIME = 1000 * 60 * 10; // 10 min
+const CACHE_TIME = 1000 * 60 * 10;
 
 // =========================
 // Root Route
 // =========================
 app.get("/", (req, res) => {
-  res.send("✔ DigiLens Unsplash Collection Server Running");
+  res.send("✔ DigiLens Unsplash Collection Server Running (Vercel)");
 });
 
 // =========================
-// 1️⃣ GET ALL COLLECTIONS OF USER "digilens"
+// 1️⃣ GET COLLECTIONS
 // =========================
 app.get("/api/digilens/collections", async (req, res) => {
   const now = Date.now();
@@ -51,22 +46,19 @@ app.get("/api/digilens/collections", async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    console.error("User Collections Error:", err.message);
     res.status(500).json({ error: "Failed to fetch DigiLens collections" });
   }
 });
 
 // =========================
-// 2️⃣ GET PHOTOS INSIDE A COLLECTION
+// 2️⃣ GET PHOTOS IN COLLECTION
 // =========================
 app.get("/api/digilens/collections/:id/photos", async (req, res) => {
   const collectionId = req.params.id;
-
   const now = Date.now();
-  if (
-    cache.collectionPhotos[collectionId] &&
-    now - cache.collectionPhotos[collectionId].timestamp < CACHE_TIME
-  ) {
+
+  if (cache.collectionPhotos[collectionId] &&
+      now - cache.collectionPhotos[collectionId].timestamp < CACHE_TIME) {
     return res.json(cache.collectionPhotos[collectionId].photos);
   }
 
@@ -82,10 +74,7 @@ app.get("/api/digilens/collections/:id/photos", async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    console.error("Collection Photos Error:", err.message);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch photos for the selected collection" });
+    res.status(500).json({ error: "Failed to fetch photos for this collection" });
   }
 });
 
@@ -100,11 +89,8 @@ app.get("/api/digilens/download/:id", async (req, res) => {
 
     res.json({ success: true, url: data.url });
   } catch (err) {
-    console.error("Download error:", err.message);
     res.status(500).json({ error: "Failed to register download" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`✔ DigiLens Server running on http://localhost:${PORT}`);
-});
+export default app; // IMPORTANT for Vercel
