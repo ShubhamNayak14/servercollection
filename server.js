@@ -8,7 +8,7 @@ dotenv.config();
 const app = express();
 app.use(cors());
 
-const PORT = process.env.PORT || 5050;
+const PORT = 5050;
 const ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY_COLLECTION;
 
 // Check API key
@@ -61,8 +61,8 @@ app.get("/api/digilens/collections", async (req, res) => {
 // =========================
 app.get("/api/digilens/collections/:id/photos", async (req, res) => {
   const collectionId = req.params.id;
-  const now = Date.now();
 
+  const now = Date.now();
   if (
     cache.collectionPhotos[collectionId] &&
     now - cache.collectionPhotos[collectionId].timestamp < CACHE_TIME
@@ -83,7 +83,9 @@ app.get("/api/digilens/collections/:id/photos", async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error("Collection Photos Error:", err.message);
-    res.status(500).json({ error: "Failed to fetch photos for the selected collection" });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch photos for the selected collection" });
   }
 });
 
@@ -103,7 +105,6 @@ app.get("/api/digilens/download/:id", async (req, res) => {
   }
 });
 
-// Start Server
 app.listen(PORT, () => {
   console.log(`✔ DigiLens Server running on http://localhost:${PORT}`);
 });
